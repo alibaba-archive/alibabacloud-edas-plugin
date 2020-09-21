@@ -1,0 +1,100 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+
+    <f:entry title="EDAS Credentials" field="credentialsString">
+        <f:select />
+    </f:entry>
+
+    <f:entry title="EDAS Namespace(cn-hangzhou:xxx)" field="namespace">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Application Id" field="appId">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Target Object(file|Url|imageUrl)" field="targetObject">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Whether target imageUrl" field="image">
+        <f:checkbox />
+    </f:entry>
+
+    <f:advanced title="Application Environment">
+        <f:entry title="EDAS Container Version" field="edasContainerVersion">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Web Container" field="webContainer">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="JDK Version" field="jdk">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Version Label Format" field="versionLabelFormat">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Environments Json" field="envs">
+            <f:textbox />
+        </f:entry>
+    </f:advanced>
+
+    <f:advanced title="Startup Command">
+        <f:entry title="Startup Command" field="startupCommand">
+            <f:textbox default="unchanging"/>
+        </f:entry>
+
+        <f:entry title="Startup Argunments Json" field="args">
+            <f:textbox />
+        </f:entry>
+    </f:advanced>
+
+    <f:advanced title="Resource Quota">
+        <f:entry title="mCpu Limit" field="cpuLimit">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Memory Limit" field="memoryLimit">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="mCpu Request" field="cpuRequest">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Memory Request" field="memoryRequest">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Replicas" field="replicas">
+            <f:textbox />
+        </f:entry>
+    </f:advanced>
+
+
+    <f:advanced title="Application Management">
+        <f:entry title="PostStart Json" field="postStart">
+            <f:textbox default="unchanging"/>
+        </f:entry>
+
+        <f:entry title="PreStop Json" field="preStop">
+            <f:textbox default="unchanging"/>
+        </f:entry>
+
+        <f:entry title="Readiness Json" field="readiness">
+            <f:textbox default="unchanging"/>
+        </f:entry>
+
+        <f:entry title="Liveness Json" field="liveness">
+            <f:textbox default="unchanging"/>
+        </f:entry>
+
+        <f:entry title="UpdateStrategy Json" field="updateStrategy">
+            <f:textbox />
+        </f:entry>
+    </f:advanced>
+</j:jelly>

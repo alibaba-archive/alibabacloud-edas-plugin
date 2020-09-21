@@ -1,0 +1,45 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+
+    <f:entry title="EDAS Credentials" field="credentialsString">
+        <f:select />
+    </f:entry>
+
+    <f:entry title="EDAS Namespace ID(e.g. cn-hangzhou:xxx)" field="namespace">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Application ID" field="appId">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Group" field="group">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Target Object" field="targetObject">
+        <f:textbox />
+    </f:entry>
+
+    <f:advanced>
+        <f:entry title="Version Label Format" field="versionLabelFormat">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Version Description Format" field="versionDescriptionFormat">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Batch" field="batch">
+            <f:textbox default="1"/>
+        </f:entry>
+
+        <f:entry title="Batch Wait Time" field="batchWaitTime">
+            <f:textbox default="0"/>
+        </f:entry>
+
+        <f:entry title="Release Type" field="releaseType">
+            <f:select/>
+        </f:entry>
+    </f:advanced>
+</j:jelly>

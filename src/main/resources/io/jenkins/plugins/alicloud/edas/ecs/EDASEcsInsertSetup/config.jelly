@@ -1,0 +1,49 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+
+    <f:entry title="EDAS Credentials" field="credentialsString">
+        <f:select />
+    </f:entry>
+
+    <f:entry title="EDAS Namespace(cn-hangzhou:xxx)" field="namespace">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Application Name" field="applicationName">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Package Type(war|jar)" field="packageType">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Cluster ID" field="clusterId">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Target Object" field="targetObject">
+        <f:textbox />
+    </f:entry>
+
+    <f:entry title="Ecu Info" field="ecuInfo">
+        <f:textbox />
+    </f:entry>
+
+    <f:advanced>
+        <f:entry title="Version Label Format" field="versionLabelFormat">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Version Description Format" field="versionDescriptionFormat">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Build Pack ID" field="buildPackId">
+            <f:textbox />
+        </f:entry>
+
+        <f:entry title="Health Check Url" field="healthCheckUrl">
+            <f:textbox />
+        </f:entry>
+    </f:advanced>
+</j:jelly>
