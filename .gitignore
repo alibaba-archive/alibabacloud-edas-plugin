@@ -1,9 +1,77 @@
+#Maven ignore
 target/
+classes/
+work/
+*.class
+.changed.projects
+.change.projects
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
+
+# edas.conf ignore
+# edas.conf
+# registry-edas.properties
+# Sample project
+hello2/
+
+# HSF log ignore
+*.log
+
+#Elipse ignore
+.settings/
+.settings/*
+**/.settings/*
+.metadata/
+.metadata/*
+RemoteSystemsTempFiles/
+.project
+**/.project
+.classpath
+**/.classpath
+Servers/
+
+*.iml
+*.ipr
+*.iws
+.idea
+.idea/**
+
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.idea
+**/.idea/**
+
+**/target/**
+
+**/classes/**
+
+# eclipse
+
+.DS_Store
+**/.DS_Store
+
+**/**/target/
+
+**/**/target/**
+
+**/**/test.propertiess
+
+key.txt
+/edas-core/src/main/resources/test.properties
+/edas-console/src/main/webapp/WEB-INF/logback.xml
+edas-service/common-impl/src/main/resources/test.properties
+*.orig
+src/main/resources/META-INF/RELEASE
+
+# vscode
+.vscode
+
+.factorypath
+
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
