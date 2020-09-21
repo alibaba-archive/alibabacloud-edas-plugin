@@ -4,7 +4,7 @@ This plugin used to publish to Alibabacloud [EDAS](https://www.aliyun.com/produc
 # Usage
 Alibabacloud credentials are needed in the System Configuration.
 
-## 配置全局证书
+## Configure global credentials
 Input Alibabacloud credentials in `Manage jenkins -> Configure System`.
 
 ![Global Config](images/globalConfig.png)
