@@ -9,7 +9,7 @@ Input Alibabacloud credentials in `Manage jenkins -> Configure System`.
 
 ![Global Config](images/globalConfig.png)
 
-配置完成后可以使用`Ping EDAS` 检测配置结果。
+`Ping EDAS` to check after finishing the configuration.
 
 ## FreeStyle job usage
 `Post-build Actions` and choose `Deploy to EDAS`，and `Add` configuration according to the specific scenario；
