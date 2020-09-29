@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.50</version>
+        <version>4.0</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>edas-jenkins-plugin</artifactId>
+    <artifactId>alibabacloud-edas</artifactId>
     <version>1.0.0</version>
     <packaging>hpi</packaging>
     <properties>
