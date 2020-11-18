@@ -13,7 +13,6 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.DescribableList;
-import io.jenkins.plugins.alicloud.AliCloudCredentials;
 import io.jenkins.plugins.alicloud.BaseSetup;
 import io.jenkins.plugins.alicloud.BaseSetupDescriptor;
 import io.jenkins.plugins.alicloud.edas.ecs.EDASEcsDeploySetup;
@@ -23,7 +22,6 @@ import io.jenkins.plugins.alicloud.edas.k8s.EDASK8sInsertSetup;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
@@ -68,8 +66,6 @@ public class DeployToEDAS extends Recorder implements SimpleBuildStep {
     @Symbol("edasClient")
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-        private Set<AliCloudCredentials> credentials;
-
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
@@ -93,26 +89,13 @@ public class DeployToEDAS extends Recorder implements SimpleBuildStep {
 
         public DescriptorImpl() {
             load();
-            if (credentials != null) {
-                AliCloudCredentials.configureCredentials(credentials);
-            } else if (AliCloudCredentials.getCredentials() != null) {
-                credentials = AliCloudCredentials.getCredentials();
-            }
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-
-            AliCloudCredentials.configureCredentials(req.bindJSONToList(AliCloudCredentials.class, json.get("credentials")));
-            credentials = AliCloudCredentials.getCredentials();
             save();
             return super.configure(req, json);
         }
-
-        public Set<AliCloudCredentials> getCredentials() {
-            return credentials;
-        }
-
     }
 
 }

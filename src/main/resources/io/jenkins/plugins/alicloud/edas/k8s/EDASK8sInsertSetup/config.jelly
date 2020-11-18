@@ -1,12 +1,24 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-    <f:entry title="EDAS Credentials" field="credentialsString">
-        <f:select />
-    </f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:c="/lib/credentials" xmlns:f="/lib/form">
 
     <f:entry title="EDAS Namespace(cn-hangzhou:xxxx)" field="namespace">
         <f:textbox />
     </f:entry>
+
+    <f:entry title="${%CredentialId}" field="credentialId">
+        <c:select />
+    </f:entry>
+
+    <f:advanced>
+        <f:entry title="Endpoint" field="endpoint">
+            <f:textbox default="edas.aliyuncs.com"/>
+        </f:entry>
+
+        <f:validateButton
+            title="${%Ping EDAS}" progress="${%Loading...}"
+            method="pingEDAS"
+            with="credentialId,namespace,endpoint" />
+    </f:advanced>
 
     <f:entry title="Cluster ID" field="clusterId">
         <f:textbox />

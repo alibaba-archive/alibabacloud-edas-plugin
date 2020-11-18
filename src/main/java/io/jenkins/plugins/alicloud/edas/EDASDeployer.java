@@ -2,7 +2,6 @@ package io.jenkins.plugins.alicloud.edas;
 
 import com.aliyuncs.DefaultAcsClient;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.alicloud.AliCloudCredentials;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
@@ -10,15 +9,17 @@ import org.apache.commons.lang.StringUtils;
 public abstract class EDASDeployer {
     private static final Logger logger = Logger.getLogger(EDASDeployer.class.getName());
 
-    private String credentialsString;
+    private String credentialId;
     private String regionId;
     private ChangeOrderManager changeOrderManager;
     private TaskListener listener;
+    private String endpoint;
 
-    public EDASDeployer(String credentialsString, String regionId, TaskListener listener) {
-        this.credentialsString = credentialsString;
+    public EDASDeployer(String credentialId, String regionId, TaskListener listener, String endpoint) {
+        this.credentialId = credentialId;
         this.regionId = regionId;
         this.listener = listener;
+        this.endpoint = endpoint;
         this.changeOrderManager = new ChangeOrderManager();
     }
 
@@ -54,12 +55,10 @@ public abstract class EDASDeployer {
     public abstract String doDeploy(String appId, String url);
 
     private boolean doTrace(String changeOrderId) throws Exception {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, endpoint);
+        if (defaultAcsClient == null) {
             return false;
         }
-        DefaultAcsClient defaultAcsClient = credentials.getAcsClient(regionId);
         return changeOrderManager.trace(defaultAcsClient, changeOrderId);
     }
 

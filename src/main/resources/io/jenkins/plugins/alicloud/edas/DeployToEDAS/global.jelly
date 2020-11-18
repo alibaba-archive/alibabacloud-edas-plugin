@@ -1,9 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-
-    <f:section title="Deploy to EDAS">
-        <f:entry title="Credentials">
-            <f:repeatableProperty field="credentials" default="${descriptor.getCredentials()}" header="EDAS credentials" />
-        </f:entry>
-    </f:section>
-
-</j:jelly>

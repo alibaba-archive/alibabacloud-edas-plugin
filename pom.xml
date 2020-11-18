@@ -4,15 +4,15 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.50</version>
+        <version>4.0</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>edas-jenkins-plugin</artifactId>
+    <artifactId>alibabacloud-edas</artifactId>
     <version>1.0.0</version>
     <packaging>hpi</packaging>
     <properties>
-        <jenkins.version>2.164.3</jenkins.version>
+        <jenkins.version>2.190.1</jenkins.version>
         <java.level>8</java.level>
     </properties>
     <name>EDAS Plugin</name>
@@ -57,6 +57,21 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>job-dsl</artifactId>
             <version>1.77</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibabacloud.jenkins</groupId>
+            <artifactId>alibabacloud-credentials</artifactId>
+            <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.aliyun</groupId>
+                    <artifactId>aliyun-java-sdk-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jenkins-ci.plugins</groupId>
+                    <artifactId>structs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <repositories>
