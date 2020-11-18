@@ -4,7 +4,6 @@ import com.aliyuncs.DefaultAcsClient;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.alicloud.AliCloudCredentials;
 import io.jenkins.plugins.alicloud.edas.ChangeOrderManager;
 import io.jenkins.plugins.alicloud.edas.EDASService;
 import io.jenkins.plugins.alicloud.edas.EDASUtils;
@@ -26,7 +25,7 @@ public class EDASEcsCreator {
     private final String applicationName;
     private final String versionLabel;
     private final String desc;
-    private final String credentialsString;
+    private final String credentialId;
     private final String targetObject;
     private final String namespace;
     private final String packageType;
@@ -46,7 +45,7 @@ public class EDASEcsCreator {
         versionLabel = EDASUtils.getValue(run, listener, envSetup.getVersionLabelFormat());
         desc = EDASUtils.getValue(run, listener, envSetup.getVersionDescriptionFormat());
         regionId =  envSetup.getRegion();
-        credentialsString = envSetup.getCredentialsString();
+        credentialId = envSetup.getCredentialId();
         targetObject = EDASUtils.getValue(run, listener, envSetup.getTargetObject());
         namespace = envSetup.getNamespace();
         packageType = envSetup.getPackageType();
@@ -84,9 +83,8 @@ public class EDASEcsCreator {
     }
 
     public String doInsertApplication() {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, envSetup.getEndpoint());
+        if (defaultAcsClient == null) {
             return "";
         }
         logger.log(Level.INFO, "start to insert ecs application");
@@ -108,7 +106,7 @@ public class EDASEcsCreator {
 
         try {
             EDASService.EDASInsertStruct struct =
-                EDASEcsService.insertToEcsCluster(credentials.getAcsClient(regionId), edasEcsConfig);
+                EDASEcsService.insertToEcsCluster(defaultAcsClient, edasEcsConfig);
             appId = struct.getAppId();
             EDASUtils.edasLog(listener, String.format("application created, appId %s", appId));
             return struct.getChangerOrderId();
@@ -120,12 +118,11 @@ public class EDASEcsCreator {
 
 
     public String doUploader() throws Exception {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, envSetup.getEndpoint());
+        if (defaultAcsClient == null) {
             return "";
         }
-        Uploader uploader = UploaderFactory.getUploader(ClusterType.ECS_CLUSTER_TYPE.value(), regionId, appId, credentials.getEndpoint());
+        Uploader uploader = UploaderFactory.getUploader(ClusterType.ECS_CLUSTER_TYPE.value(), regionId, appId, envSetup.getEndpoint());
         File file= EDASUtils.getLocalFileObject(workspace, targetObject);
         if (file == null || !file.getAbsoluteFile().exists()) {
             logger.log(Level.SEVERE, "no file found in path " + targetObject);
@@ -133,23 +130,21 @@ public class EDASEcsCreator {
             return "";
         }
 
-        return uploader.upload(file, credentials.getAcsClient(regionId));
+        return uploader.upload(file, defaultAcsClient);
     }
 
     public String doCheckApplication() {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, envSetup.getEndpoint());
+        if (defaultAcsClient == null) {
             return "";
         }
-        return EDASService.getAppId(credentials.getAcsClient(regionId), regionId, applicationName, namespace,
+        return EDASService.getAppId(defaultAcsClient, regionId, applicationName, namespace,
             ClusterType.ECS_CLUSTER_TYPE.value());
     }
 
     public String doDeploy(String url) {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, envSetup.getEndpoint());
+        if (defaultAcsClient == null) {
             return "";
         }
         listener.getLogger().println("start to deploy to ecs application");
@@ -167,7 +162,7 @@ public class EDASEcsCreator {
         edasEcsConfig.setGroup("all");
 
         try {
-            return EDASEcsService.deployToEcsCluster(credentials.getAcsClient(regionId), edasEcsConfig);
+            return EDASEcsService.deployToEcsCluster(defaultAcsClient, edasEcsConfig);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -175,12 +170,10 @@ public class EDASEcsCreator {
     }
 
     private boolean doTrace(String changeOrderId) throws Exception {
-        AliCloudCredentials credentials = AliCloudCredentials.getCredentialsByString(credentialsString);
-        if (credentials == null) {
-            logger.log(Level.INFO,"no credentials found");
+        DefaultAcsClient defaultAcsClient = EDASService.getAcsClient(credentialId, regionId, envSetup.getEndpoint());
+        if (defaultAcsClient == null) {
             return false;
         }
-        DefaultAcsClient defaultAcsClient = credentials.getAcsClient(regionId);
         return changeOrderManager.trace(defaultAcsClient, changeOrderId);
     }
 }

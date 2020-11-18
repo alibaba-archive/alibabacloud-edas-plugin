@@ -1,5 +1,8 @@
 package io.jenkins.plugins.alicloud.edas;
 
+import com.alibabacloud.credentials.plugin.auth.AlibabaCredentials;
+import com.alibabacloud.credentials.plugin.client.AlibabaClient;
+import com.alibabacloud.credentials.plugin.util.CredentialsHelper;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.edas.model.v20170801.GetApplicationRequest;
 import com.aliyuncs.edas.model.v20170801.GetApplicationResponse;
@@ -11,20 +14,24 @@ import com.aliyuncs.edas.model.v20170801.GetPackageStorageCredentialRequest;
 import com.aliyuncs.edas.model.v20170801.GetPackageStorageCredentialResponse;
 import com.aliyuncs.edas.model.v20170801.ListApplicationRequest;
 import com.aliyuncs.edas.model.v20170801.ListApplicationResponse;
-import com.aliyuncs.edas.model.v20170801.ListUserDefineRegionRequest;
-import com.aliyuncs.edas.model.v20170801.ListUserDefineRegionResponse;
 import com.aliyuncs.edas.model.v20170801.QueryRegionConfigRequest;
 import com.aliyuncs.edas.model.v20170801.QueryRegionConfigResponse;
+import com.aliyuncs.endpoint.EndpointResolver;
+import com.aliyuncs.endpoint.ResolveEndpointRequest;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.exceptions.ServerException;
-import com.aliyuncs.profile.DefaultProfile;
-import io.jenkins.plugins.alicloud.AliCloudCredentials;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.google.common.base.Strings;
+import hudson.model.Item;
+import hudson.util.FormValidation;
+import io.jenkins.plugins.alicloud.edas.enumeration.ClusterType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
@@ -41,17 +48,6 @@ public abstract class EDASService {
 
     private static final Logger logger = Logger.getLogger(EDASService.class.getName());
 
-    public static DefaultAcsClient getAcsClientByRegonId(AliCloudCredentials credentials, String regionId) throws ClientException {
-        if (regionId.contains(":")) {
-            regionId = regionId.split(":")[0];
-        }
-        DefaultProfile.addEndpoint(regionId, regionId, "edas", "edas." + regionId + ".aliyuncs.com");
-        DefaultProfile profile = DefaultProfile.getProfile(regionId, credentials.getAccessKeyId(), credentials.getAccessKeySecret());
-        DefaultAcsClient client = new DefaultAcsClient(profile);
-
-        return client;
-    }
-
     public static GetPackageStorageCredentialResponse.Credential getUploadCredential(DefaultAcsClient acsClient) {
         try {
             GetPackageStorageCredentialRequest request = new GetPackageStorageCredentialRequest();
@@ -65,31 +61,6 @@ public abstract class EDASService {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static List<ListUserDefineRegionResponse.UserDefineRegionEntity> getAllNamespace(DefaultAcsClient acsClient, String regionId) {
-        List<ListUserDefineRegionResponse.UserDefineRegionEntity> ns = new ArrayList<>();
-        try {
-            ListUserDefineRegionRequest request = new ListUserDefineRegionRequest();
-            request.setRegionId(regionId);
-
-            ListUserDefineRegionResponse response = acsClient.getAcsResponse(request);
-            if (response.getCode() == 200) {
-                ns.addAll(response.getUserDefineRegionList());
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-
-        Collections.sort(ns, new Comparator<ListUserDefineRegionResponse.UserDefineRegionEntity>() {
-
-            @Override public int compare(ListUserDefineRegionResponse.UserDefineRegionEntity o1,
-                ListUserDefineRegionResponse.UserDefineRegionEntity o2) {
-                return o1.getRegionName().compareTo(o2.getRegionName());
-            }
-        });
-
-        return ns;
     }
 
 
@@ -246,5 +217,70 @@ public abstract class EDASService {
         }
 
         return null;
+    }
+
+    public static FormValidation pingEDAS(String credentialId, String namespace, String endpoint) {
+        if (StringUtils.isBlank(credentialId)) {
+            return FormValidation.error("CredentialId cannot be empty");
+        }
+
+        if (StringUtils.isBlank(namespace)) {
+            return FormValidation.error("Namespace cannot be empty");
+        }
+        String region = namespace.split(":")[0];
+
+        try {
+            List<ListApplicationResponse.Application> apps = EDASService.getAllApps(
+                getAcsClient(credentialId, namespace, endpoint),
+                region, EDASUtils.ALL_NAMESPACE, ClusterType.ALL_KINDS.value());
+        } catch (Exception e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        return FormValidation.ok("success");
+    }
+
+    public static FormValidation checkCredentialId(String value, Item owner) {
+        if (owner == null) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
+                return FormValidation.ok();
+            }
+        } else {
+            if (!owner.hasPermission(Item.EXTENDED_READ)
+                && !owner.hasPermission(CredentialsProvider.USE_ITEM)) {
+                return FormValidation.ok();
+            }
+        }
+        if (StringUtils.isBlank(value)) {
+            return FormValidation.error("Please choose EDAS Credentials");
+        }
+        if (value.startsWith("${") && value.endsWith("}")) {
+            return FormValidation.warning("Cannot validate expression based credentials");
+        }
+        if (CredentialsHelper.getCredentials(value) == null) {
+            return FormValidation.error("Cannot find currently selected credentials");
+        }
+        return FormValidation.ok();
+    }
+
+    public static DefaultAcsClient getAcsClient(String credentialId, String regionId, String endpoint) {
+        AlibabaCredentials credentials = CredentialsHelper.getCredentials(credentialId);
+        if (credentials == null) {
+            logger.log(Level.SEVERE,"no credentials found");
+            return null;
+        }
+        String region = regionId.split(":")[0];
+        AlibabaClient client = new AlibabaClient(credentials, region);
+        DefaultAcsClient defaultAcsClient = (DefaultAcsClient)client.getClient();
+        defaultAcsClient.setEndpointResolver(new EndpointResolver() {
+            @Override public String resolve(ResolveEndpointRequest request) throws ClientException {
+                if (Strings.isNullOrEmpty(endpoint) || endpoint.endsWith("aliyuncs.com")) {
+                    return String.format("edas.%s.aliyuncs.com", client.getRegionNo());
+                } else {
+                    return endpoint;
+                }
+            }
+        });
+        return defaultAcsClient;
     }
 }

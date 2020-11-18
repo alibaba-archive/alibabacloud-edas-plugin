@@ -1,25 +1,36 @@
 package io.jenkins.plugins.alicloud.edas.k8s;
 
+import com.alibabacloud.credentials.plugin.auth.AlibabaCredentials;
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import io.jenkins.plugins.alicloud.AliCloudCredentials;
 import io.jenkins.plugins.alicloud.BaseSetup;
 import io.jenkins.plugins.alicloud.BaseSetupDescriptor;
+import io.jenkins.plugins.alicloud.edas.EDASService;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Objects;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 public class EDASK8sDeploySetup extends BaseSetup {
-    private String credentialsString;
+    private String credentialId;
     private String regionId;
+    private String endpoint;
     private String namespace;
     private String appId;
     private String targetObject;
@@ -50,12 +61,12 @@ public class EDASK8sDeploySetup extends BaseSetup {
     @DataBoundConstructor
     public EDASK8sDeploySetup(
             String namespace,
-            String credentialsString,
+            String credentialId,
             String appId,
             String targetObject,
             Boolean image) {
         this.namespace = namespace;
-        this.credentialsString = credentialsString;
+        this.credentialId = credentialId;
         this.appId = appId;
         this.image = image;
         this.targetObject = targetObject;
@@ -73,8 +84,8 @@ public class EDASK8sDeploySetup extends BaseSetup {
         return versionLabelFormat == null ? "" : versionLabelFormat;
     }
 
-    public String getCredentialsString() {
-        return credentialsString;
+    public String getCredentialId() {
+        return credentialId;
     }
 
     @Override
@@ -108,6 +119,18 @@ public class EDASK8sDeploySetup extends BaseSetup {
 
     public String getJdk() {
         return jdk;
+    }
+
+    public String getEndpoint() {
+        if (StringUtils.isBlank(endpoint)) {
+            return "edas.aliyuncs.com";
+        }
+        return endpoint;
+    }
+
+    @DataBoundSetter
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
     @DataBoundSetter
@@ -276,46 +299,49 @@ public class EDASK8sDeploySetup extends BaseSetup {
             return "EDAS K8s Application";
         }
 
-        public ListBoxModel doFillCredentialsStringItems(@QueryParameter String credentials) {
-            ListBoxModel items = new ListBoxModel();
-            items.add("");
-            for (AliCloudCredentials creds : AliCloudCredentials.getCredentials()) {
-
-                items.add(creds, creds.toString());
-                if (creds.toString().equals(credentials)) {
-                    items.get(items.size() - 1).selected = true;
-                }
+        public ListBoxModel doFillCredentialIdItems(@AncestorInPath Item owner) {
+            if (Objects.isNull(owner) || !owner.hasPermission(Item.CONFIGURE)) {
+                return new ListBoxModel(new ListBoxModel.Option(StringUtils.EMPTY));
             }
 
-            return items;
+            return new StandardListBoxModel()
+                .withEmptySelection()
+                .withMatching(
+                    CredentialsMatchers.always(),
+                    CredentialsProvider.lookupCredentials(AlibabaCredentials.class,
+                        owner.getParent(), ACL.SYSTEM, Collections.EMPTY_LIST));
         }
 
-        public FormValidation doCheckcredentialsString(@QueryParameter String value) {
-            if (value.length() == 0) {
-                return FormValidation.error("Please choose EDAS Credentials");
-            }
-            return FormValidation.ok();
+        public FormValidation doCheckCredentialId(@QueryParameter String value, @AncestorInPath Item owner) {
+            return EDASService.checkCredentialId(value, owner);
         }
 
         public FormValidation doCheckNamespace(@QueryParameter String value) {
-            if (value.length() == 0) {
+            if (StringUtils.isBlank(value)) {
                 return FormValidation.error("Please set Namespace");
             }
             return FormValidation.ok();
         }
 
         public FormValidation doCheckAppId(@QueryParameter String value) {
-            if (value.length() == 0) {
+            if (StringUtils.isBlank(value)) {
                 return FormValidation.error("Please set Application Id");
             }
             return FormValidation.ok();
         }
 
         public FormValidation doCheckTargetObject(@QueryParameter String value) {
-            if (value.length() == 0) {
+            if (StringUtils.isBlank(value)) {
                 return FormValidation.error("Please set Target Object");
             }
             return FormValidation.ok();
+        }
+
+        public FormValidation doPingEDAS(
+            @QueryParameter("credentialId") String credentialId,
+            @QueryParameter("namespace") String namespace,
+            @QueryParameter("endpoint") String endpoint) {
+            return EDASService.pingEDAS(credentialId, namespace, endpoint);
         }
 
     }

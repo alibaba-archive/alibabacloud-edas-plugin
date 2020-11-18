@@ -42,14 +42,14 @@ The methods supported list below：
 ```
 void deployApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String group,
         String appId,
         String targetObject)；
 
 void deployApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String group,
         String appId,
         String targetObject,
@@ -61,7 +61,7 @@ void deployApplication(
 
 void insertApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String applicationName,
         String packageType,
         String clusterId,
@@ -70,7 +70,7 @@ void insertApplication(
 
 void insertApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String applicationName,
         String packageType,
         String clusterId,
@@ -83,14 +83,14 @@ void insertApplication(
 
 void deployK8sApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String appId,
         String targetObject,
         Boolean image)；
 
 void deployK8sApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String appId,
         String targetObject,
         Boolean image,
@@ -114,7 +114,7 @@ void deployK8sApplication(
 
 void insertK8sApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String applicationName,
         String packageType,
         String clusterId,
@@ -124,7 +124,7 @@ void insertK8sApplication(
 
  void insertK8sApplication(
         String namespace,
-        String credentialsString,
+        String credentialId,
         String applicationName,
         String packageType,
         String clusterId,
