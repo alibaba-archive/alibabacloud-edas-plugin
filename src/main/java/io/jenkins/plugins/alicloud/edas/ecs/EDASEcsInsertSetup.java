@@ -166,7 +166,7 @@ public class EDASEcsInsertSetup extends BaseSetup {
     }
 
     @Extension
-    @Symbol("InsertApplication")
+    @Symbol("InsertEDASApplication")
     public static class DescriptorImpl extends BaseSetupDescriptor {
         @Override
         public String getDisplayName() {
@@ -237,9 +237,13 @@ public class EDASEcsInsertSetup extends BaseSetup {
         }
 
         public FormValidation doPingEDAS(
+            @AncestorInPath Item owner,
             @QueryParameter("credentialId") String credentialId,
             @QueryParameter("namespace") String namespace,
             @QueryParameter("endpoint") String endpoint) {
+            if (Objects.isNull(owner) || !owner.hasPermission(Item.CONFIGURE)) {
+                return FormValidation.error("No permission");
+            }
             return EDASService.pingEDAS(credentialId, namespace, endpoint);
         }
     }

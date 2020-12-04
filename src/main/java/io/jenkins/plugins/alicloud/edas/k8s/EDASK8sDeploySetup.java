@@ -292,7 +292,7 @@ public class EDASK8sDeploySetup extends BaseSetup {
     }
 
     @Extension
-    @Symbol("deployK8sApplication")
+    @Symbol("deployEDASK8sApplication")
     public static class DescriptorImpl extends BaseSetupDescriptor {
         @Override
         public String getDisplayName() {
@@ -338,9 +338,13 @@ public class EDASK8sDeploySetup extends BaseSetup {
         }
 
         public FormValidation doPingEDAS(
+            @AncestorInPath Item owner,
             @QueryParameter("credentialId") String credentialId,
             @QueryParameter("namespace") String namespace,
             @QueryParameter("endpoint") String endpoint) {
+            if (Objects.isNull(owner) || !owner.hasPermission(Item.CONFIGURE)) {
+                return FormValidation.error("No permission");
+            }
             return EDASService.pingEDAS(credentialId, namespace, endpoint);
         }
 
